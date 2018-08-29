@@ -622,6 +622,12 @@ public class AddressBook {
         });
     }
 
+    /**
+     * Edits/replaces an existing person's details with new details.
+     *
+     * @param commandArgs raw command args for the edit person command
+     * @return feedback display message for the operation result
+     */
     private static String executeEditPerson(String commandArgs) {
         if (!isEditPersonArgsValid(commandArgs)) {
             return getMessageForInvalidCommandInput(COMMAND_EDIT_WORD, getUsageInfoForEditCommand());
@@ -631,14 +637,25 @@ public class AddressBook {
         String personArgs = splitArgs[1];
         HashMap<PersonProperty, String> newPersonData = decodePersonFromString(personArgs).get();
 
+        replaceTargetWithNewPerson(targetIndex, newPersonData);
+        return getMessageForSuccessfulEditPerson(newPersonData);
+
+    }
+
+    /**
+     * Given a target index (with reference to the ALL_PERSONS array list), replace the target person
+     * with the new specified person.
+     *
+     * @param targetIndex of the person to be replaced, with reference to ALL_PERSONS
+     * @param newPersonData new person to replace the target person's details
+     */
+    private static void replaceTargetWithNewPerson(int targetIndex, HashMap<PersonProperty, String> newPersonData) {
         HashMap<PersonProperty, String> oldPersonData = latestPersonListingView.get(targetIndex);
         int replacableIndex = ALL_PERSONS.indexOf(oldPersonData);
         ALL_PERSONS.remove(replacableIndex);
         ALL_PERSONS.add(replacableIndex, newPersonData);
         //save to file and return result string
         savePersonsToFile(getAllPersonsInAddressBook(), storageFilePath);
-        return getMessageForSuccessfulEditPerson(newPersonData);
-
     }
 
 
