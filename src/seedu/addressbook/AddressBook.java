@@ -129,7 +129,8 @@ public class AddressBook {
     //private static final String COMMAND_EDIT_PARAMETER =
     private static final String COMMAND_EDIT_EXAMPLE = COMMAND_EDIT_WORD + " 1 "
             + "John Doebermann p/12341234 e/johndb@gmail.com";
-    private static final String COMMAND_EDIT_PARAMETERS = "INDEX " + PERSON_DATA_PREFIX_PHONE + "PHONE_NUMBER "
+    private static final String COMMAND_EDIT_PARAMETERS = "INDEX " + "NAME "
+            + PERSON_DATA_PREFIX_PHONE + "PHONE_NUMBER "
             + PERSON_DATA_PREFIX_EMAIL + "EMAIL ";
 
     private static final String COMMAND_HELP_WORD = "help";
@@ -622,28 +623,24 @@ public class AddressBook {
     }
 
     private static String executeEditPerson(String commandArgs) {
-        //TODO
         if (!isEditPersonArgsValid(commandArgs)) {
             return getMessageForInvalidCommandInput(COMMAND_EDIT_WORD, getUsageInfoForEditCommand());
         }
         String[] splitArgs = splitTargetIndexAndPersonData(commandArgs);
-        int targetIndex = Integer.parseInt(splitArgs[0].trim());
+        int targetIndex = Integer.parseInt(splitArgs[0].trim()) - DISPLAYED_INDEX_OFFSET;
         String personArgs = splitArgs[1];
         HashMap<PersonProperty, String> newPersonData = decodePersonFromString(personArgs).get();
 
-        ALL_PERSONS.remove(targetIndex);
-        ALL_PERSONS.add(targetIndex, newPersonData);
+        HashMap<PersonProperty, String> oldPersonData = latestPersonListingView.get(targetIndex);
+        int replacableIndex = ALL_PERSONS.indexOf(oldPersonData);
+        ALL_PERSONS.remove(replacableIndex);
+        ALL_PERSONS.add(replacableIndex, newPersonData);
         //save to file and return result string
         savePersonsToFile(getAllPersonsInAddressBook(), storageFilePath);
         return getMessageForSuccessfulEditPerson(newPersonData);
 
     }
 
-    private static String getUsageInfoForEditCommand() {
-        return String.format(MESSAGE_COMMAND_HELP, COMMAND_EDIT_WORD, COMMAND_EDIT_DESC) + LS
-                + String.format(MESSAGE_COMMAND_HELP_PARAMETERS, COMMAND_EDIT_PARAMETERS) + LS
-                + String.format(MESSAGE_COMMAND_HELP_EXAMPLE, COMMAND_EDIT_EXAMPLE) + LS;
-    }
 
     private static String getMessageForSuccessfulEditPerson(HashMap<PersonProperty, String> editedPerson) {
         return String.format(MESSAGE_EDIT,
@@ -1173,13 +1170,22 @@ public class AddressBook {
                 + getUsageInfoForDeleteCommand() + LS
                 + getUsageInfoForClearCommand() + LS
                 + getUsageInfoForSortCommand() + LS
+                + getUsageInfoForEditCommand() + LS
                 + getUsageInfoForExitCommand() + LS
                 + getUsageInfoForHelpCommand();
     }
 
+    /** Returns the string for showing 'sort' command usage instruction */
     private static String getUsageInfoForSortCommand() {
         return String.format(MESSAGE_COMMAND_HELP, COMMAND_SORT_WORD, COMMAND_SORT_DESC) + LS
                 + String.format(MESSAGE_COMMAND_HELP_EXAMPLE, COMMAND_SORT_EXAMPLE) + LS;
+    }
+
+    /** Returns the string for showing 'edit' command usage instruction */
+    private static String getUsageInfoForEditCommand() {
+        return String.format(MESSAGE_COMMAND_HELP, COMMAND_EDIT_WORD, COMMAND_EDIT_DESC) + LS
+                + String.format(MESSAGE_COMMAND_HELP_PARAMETERS, COMMAND_EDIT_PARAMETERS) + LS
+                + String.format(MESSAGE_COMMAND_HELP_EXAMPLE, COMMAND_EDIT_EXAMPLE) + LS;
     }
 
     /** Returns the string for showing 'add' command usage instruction */
